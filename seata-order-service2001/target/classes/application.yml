@@ -1,0 +1,59 @@
+server:
+  port: 2001
+
+spring:
+  application:
+    name: seata-order-service
+  cloud:
+    alibaba:
+      seata:
+        #自定义事务组名称需要与seata-server中的对应
+        tx-service-group: abc_tx_group
+    nacos:
+      discovery:
+        server-addr: 192.168.127.128:8848
+        enabled: true
+      config:
+        server-addr: 192.168.127.128:8848
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.127.128:3306/seata_order?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+    password: abc123
+
+seata:
+  application-id: ${spring.application.name}
+  tx-service-group: abc_tx_group
+  config:
+    type: nacos
+    nacos:
+      #需要和server在同一个注册中心下
+      serverAddr: 192.168.127.128:8848
+      #需要server端(registry和config)、nacos配置client端(registry和config)保持一致
+      group: SEATA_GROUP
+  registry:
+    type: nacos
+    nacos:
+      #需要和server端保持一致，即server在nacos中的名称，默认为seata-server
+      application: seata-server
+      serverAddr: 192.168.127.128:8848
+      #需要server端(registry和config)、nacos配置client端(registry和config)保持一致
+      group: SEATA_GROUP
+      cluster: default
+
+feign:
+  hystrix:
+    enabled: false
+
+logging:
+  level:
+    io:
+      seata: info
+
+mybatis:
+  mapperLocations: classpath:mapper/*.xml
+
+#--------------Feign负载均衡配置 配置全局超时时间 毫秒单位   根据业务酌情配置
+ribbon:
+  ConnectTimeout: 50000 #请求连接的超时时间，默认时间为1秒
+  ReadTimeout: 50000 #请求处理的超时时间
